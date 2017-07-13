@@ -1,6 +1,6 @@
 - hosts:
-    - hostXXX.ws.nsrc.org
-    - hostYYY.ws.nsrc.org
+    - hostXX.ws.nsrc.org
+    - hostYY.ws.nsrc.org
   tasks:
     - name: ensure package cache is up to date
       apt: update_cache=yes cache_valid_time=3600
