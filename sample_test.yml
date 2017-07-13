@@ -1,5 +1,5 @@
 - hosts:
-    - hostXX.ws.nsrc.org
+    - hostXy.ws.nsrc.org
     - hostYY.ws.nsrc.org
   tasks:
     - name: ensure package cache is up to date
