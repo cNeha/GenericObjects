@@ -36,7 +36,7 @@
 
   - name: Get the existing host_groups association of the puppet_master_server
     uri:
-      url: "{{ puppet_master_go_href}}?associations=host_groups"
+      url: "{{ puppet_master_go_href}}?associations=my_host_group"
       method: GET
       validate_certs: no
       headers:
