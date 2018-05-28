@@ -3,9 +3,9 @@
   hosts: localhost
 
   vars:
-  - host_group_dro_name: "{{ 'host_groups'|urlencode }}"
+  - host_group_dro_name: "{{ 'my_host_group'|urlencode }}"
   - association_hrefs: []
-  - puppet_master_dro_name: "{{'puppet_master_server'|urlencode }}"
+  - puppet_master_dro_name: "{{'my_puppet'|urlencode }}"
 
   tasks:
   - name: Lookup the "Puppet Master Server" DRO supplied in the dialog
