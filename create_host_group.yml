@@ -1,0 +1,69 @@
+---
+- name: Create DRO Association
+  hosts: localhost
+
+  vars:
+  - host_group_dro_name: "{{ 'host_groups'|urlencode }}"
+  - association_hrefs: []
+  - puppet_master_dro_name: "{{'puppet_master_server'|urlencode }}"
+
+  tasks:
+  - name: Lookup the "Puppet Master Server" DRO supplied in the dialog
+    uri:
+      url: "{{ manageiq.api_url }}/api/generic_objects?expand=resources&filter[]=name='{{ puppet_master_dro_name }}'"
+      method: GET
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+    register: puppet_master_go
+
+  - set_fact:
+      puppet_master_go_href: "{{ puppet_master_go.json.resources[0].href }}"
+
+  - name: Find the 'host_groups' DRO Definition
+    uri:
+      url: "{{manageiq.api_url }}/api/generic_object_definitions?expand=resources&filter[]=name='{{ host_group_dro_name }}'"
+      method: GET
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+    register: host_group_go
+
+  - set_fact:
+      host_group_go_href: "{{ host_group_go.json.resources[0].href }}"
+
+  - name: Get the existing host_groups association of the puppet_master_server
+    uri:
+      url: "{{ puppet_master_go_href}}?associations=host_groups"
+      method: GET
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+    register: associations
+
+# Extract the existing association hrefs into their own list
+  - set_fact:
+      association_hrefs: "{{ association_hrefs + [ { 'href': item.href } ] }}"
+    with_items: "{{ associations.json.host_groups }}"
+
+#Post the updated list back to the generic object
+
+  - name: Create the corresponding association in the puppet master server back to the host_groups
+    uri:
+      url: "{{ puppet_master_go_href }}"
+      method: POST
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+      body:
+        action: edit
+        associations:
+          host_groups:
+            "{{ association_hrefs }}"
+    register: output
+
+
