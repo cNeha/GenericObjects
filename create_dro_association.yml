@@ -62,7 +62,7 @@
       body:
         action: edit
         associations:
-          my_host_group:
+          host_groups:
             "{{ association_hrefs }}"
     register: output
 
