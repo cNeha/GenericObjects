@@ -5,4 +5,4 @@
     yum:
       name: "{{ package_name }}"
       state: latest
-  register: package
+    register: package
