@@ -56,7 +56,7 @@
         name: "{{ lb_name }}"
         properties:
           attributes:
-            id: 1
+            id: "{{ lb_id }}"
             name: "{{ lb_name }}"
             type: "{{ lb_type }}"
           associations:
