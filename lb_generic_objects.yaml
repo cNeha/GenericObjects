@@ -1,0 +1,113 @@
+---
+- name: Create DRO Association
+  hosts: localhost
+
+  vars:
+  - lb_class: "{{ 'lb_class'|urlencode }}"
+  - lb_name: "{{ 'lb_name'|urlencode }}"
+  - association_hrefs: []
+
+  tasks:
+  - name: Create "Load Balancer" DRO supplied in the dialog
+    uri:
+      url: "{{ manageiq.api_url }}/api/generic_object_definitions"
+      method: POST
+      validate_certs: no
+      body_format: json
+      body:
+        action: create
+        name: "{{ lb_class }}"
+        properties:
+          attributes:
+            id: integer
+            name: string
+            type: string
+          associations:
+            service: vms
+            provider: Vm
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+
+     
+  - name: Lookup the "Load Balancer" DRO supplied in the dialog
+    uri:
+      url: "{{ manageiq.api_url }}/api/generic_objects?expand=resources&filter[]=name='{{ lb_class }}'"
+      method: GET
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+    register: lb_class_go
+
+  - set_fact:
+      lb_class_go_href: "{{ lb_class_go.json.resources[0].href }}"
+
+  - name: Create "LB" DRO Definition
+    uri:
+      url: "{{manageiq.api_url }}/api/generic_objects"
+      method: POST
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+      body:
+        action: create
+        name: "{{ lb_name }}"
+        properties:
+          attributes:
+            id: 1
+            name: "{{ lb_name }}"
+            type: "{{ lb_type }}"
+          associations:
+            service: vms
+            provider: Vm
+
+  - name: Find the "LB" DRO Definition
+    uri:
+      url: "{{manageiq.api_url }}/api/generic_objects?expand=resources&filter[]=name='{{ lb_name }}'"
+      method: GET
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+    register: lb_go
+
+  - set_fact:
+      lb_go_href: "{{ lb_go.json.resources[0].href }}"
+
+  - name: Get the existing load balancers association of the lb_class
+    uri:
+      url: "{{ lb_go_href}}?associations={{ lb_name }}"
+      method: GET
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+    register: associations
+
+  - set_fact:
+      association_hrefs: "{{ associations.json.resources[0].href }}"
+  
+  #Extract the existing association hrefs into their own list
+  - set_fact:
+      association_hrefs: "{{ association_hrefs + [ { 'href': lb_go_href } ] }}"
+    
+
+#Post the updated list back to the generic object
+
+  - name: Create the corresponding association in the puppet master server back to the host_groups
+    uri:
+      url: "{{ lb_class_go_href }}"
+      method: POST
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+      body:
+        action: edit
+        associations:
+          host_groups:
+            "{{ association_hrefs }}"
+    register: output
+
+
