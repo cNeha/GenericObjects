@@ -6,6 +6,7 @@
   - lb_class: "{{ 'lb_class'|urlencode }}"
   - lb_name: "{{ 'lb_name'|urlencode }}"
   - lb_type: "{{ 'lb_type'|urlencode }}"
+  - lb_id: "{{ 'lb_id'|urlencode }}"
   - association_hrefs: []
 
   tasks:
