@@ -86,9 +86,6 @@
         X-Auth-Token: "{{ manageiq.api_token }}"
       body_format: json
     register: associations
-
-  - set_fact:
-      association_hrefs: "{{ associations.json.resources[0].href }}"
   
   #Extract the existing association hrefs into their own list
   - set_fact:
