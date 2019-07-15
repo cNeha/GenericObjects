@@ -97,7 +97,7 @@
 
 #Post the updated list back to the generic object
 
-  - name: Create the corresponding association in the puppet master server back to the host_groups
+  - name: Create the corresponding association in the lb class back to the load balancer
     uri:
       url: "{{ lb_class_go_href }}"
       method: POST
@@ -112,4 +112,16 @@
             "{{ association_hrefs }}"
     register: output
 
-
+  - name: Add generic object to service
+    uri:
+      url: "{{ manageiq.api_url }}/api/{{ manageiq.service }}"
+      method: POST
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+      body:
+        action: add_resource
+        resource:
+          resource:
+            href: "{{ lb_go.json.results[0].href }}"
